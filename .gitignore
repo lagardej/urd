@@ -1,0 +1,11 @@
+bin/
+obj/
+
+# NuGet
+project.assets.json
+*.nuget.props
+*.nuget.targets
+*.nuget.cache
+
+# Test output
+TestResults/
