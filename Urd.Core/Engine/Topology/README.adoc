@@ -1,0 +1,114 @@
+= Topology Reference
+:toc: left
+:toclevels: 2
+
+== Purpose
+
+Defines the spherical partition used by all simulation processes.
+The backend is opaque; all access is through `IHexGrid`.
+
+== Files
+
+[cols="1,2"]
+|===
+|File |Role
+
+|`IHexGrid.cs`
+|Operation contract. Only interface simulation code may depend on.
+
+|`LatLng.cs`
+|Value object. Latitude/longitude in degrees as two `double` primitives.
+
+|`Resolution.cs`
+|Resolution enum. Cell counts per level. Warnings on high-resolution full queries.
+
+|===
+
+== Contract (`IHexGrid`)
+
+All operations are deterministic and side effect free.
+Cell identifiers are opaque `ulong` values.
+Coordinates are `LatLng` (degrees).
+Invalid input must not crash callers; implementations return safe sentinel values and emit diagnostics.
+
+[cols="1,2"]
+|===
+|Operation |Description
+
+2+h|Partition access
+
+|`CellAt(lat, lng, resolution)`
+|Resolve cell from coordinates and resolution.
+
+|`CellsAtResolution(resolution)`
+|All cells at a given resolution. Expensive at high resolutions — see `Resolution.cs`.
+
+|`RootCells()`
+|Complete top-level partition (R0).
+
+2+h|Cell introspection
+
+|`BoundaryOf(cell)`
+|Boundary polygon vertices in traversal order.
+
+|`CenterOf(cell)`
+|Centre coordinate of a cell.
+
+|`IsValid(cell)`
+|Whether a cell identifier is valid.
+
+|`ResolutionOf(cell)`
+|Resolution of a given cell.
+
+2+h|Hierarchy traversal
+
+|`ChildrenOf(cell, resolution)`
+|All child cells at a finer resolution.
+
+|`InferResolution(cells, fallback)`
+|Resolution of the first key in a dictionary; fallback if empty.
+
+|`ParentOf(cell, resolution)`
+|Ancestor cell at a coarser resolution.
+
+2+h|Neighbourhood traversal
+
+|`Disk(cell, k)`
+|All cells within ring radius k, including centre.
+
+|`GridRing(center, k)`
+|Cells at exactly ring distance k from centre. k=0 returns centre only.
+|===
+
+== Resolution model
+
+* R0 is the coarsest level: 122 cells covering the full sphere.
+* Each resolution subdivides every cell into ~7 children: `2 + 10 × 7^n` cells at level `n`.
+* Every resolution has exactly 12 pentagonal cells (topological invariant; Euler's polyhedron formula). All others are hexagonal.
+* Neighbourhood irregularities occur at pentagons — traversal and routing code must handle them explicitly.
+
+=== Cost warning
+
+Full enumeration via `CellsAtResolution` grows rapidly:
+
+[cols="1,1"]
+|===
+|Resolution |Cell count
+
+|R5  |~2M
+|R7  |~99M
+|R9  |~4.8B
+|R10+|tens of billions and above
+|===
+
+Prefer localized queries (`Disk`, `GridRing`, `ChildrenOf`) over full enumeration above R5.
+
+== References
+
+* Sahr, K., White, D., Kimerling, A. J. (2003).
+Geodesic discrete global grid systems. _Cartography and Geographic Information Science_.
+* Kimerling, A. J., Sahr, K., White, D., Song, L. (1999).
+Comparing geometrical properties of global grids. _Cartography and Geographic Information Science_.
+* Snyder, J. P. (1992).
+An equal-area map projection for polyhedral globes. _Cartographica_.
+* Samet, H. (2006). _Foundations of Multidimensional and Metric Data Structures_.
