@@ -3,7 +3,7 @@ namespace Urd.Engine.Topology;
 /// <summary>
 ///     Spherical partition operation contract.
 ///     All coordinates are latitude/longitude in degrees.
-///     Cell identifiers are opaque <see cref="CellId"/> values.
+///     Cell identifiers are opaque <see cref="CellId" /> values.
 ///     All operations are deterministic and side-effect free.
 /// </summary>
 public interface IGrid
@@ -16,8 +16,11 @@ public interface IGrid
     /// <summary>Resolves the cell at the given coordinates and resolution.</summary>
     CellId CellAt(double latDeg, double lngDeg, Resolution resolution);
 
-    /// <inheritdoc cref="CellAt(double, double, Resolution)"/>
-    CellId CellAt(LatLng latLng, Resolution resolution) => CellAt(latLng.Lat, latLng.Lng, resolution);
+    /// <inheritdoc cref="CellAt(double, double, Resolution)" />
+    CellId CellAt(LatLng latLng, Resolution resolution)
+    {
+        return CellAt(latLng.Lat, latLng.Lng, resolution);
+    }
 
     /// <summary>Enumerates all cells at a given resolution.</summary>
     IEnumerable<CellId> CellsAtResolution(Resolution resolution);
@@ -46,7 +49,7 @@ public interface IGrid
 
     /// <summary>
     ///     Infers the grid resolution from the first cell in a non-empty dictionary.
-    ///     Returns <paramref name="fallback"/> when the dictionary is empty.
+    ///     Returns <paramref name="fallback" /> when the dictionary is empty.
     /// </summary>
     Resolution InferResolution<T>(Dictionary<CellId, T> cells, Resolution fallback);
 

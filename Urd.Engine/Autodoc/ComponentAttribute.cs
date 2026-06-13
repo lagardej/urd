@@ -1,8 +1,8 @@
 namespace Urd.Engine.Autodoc;
 
 /// <summary>
-/// Marks a class as an engine component for autodoc generation.
-/// The generator will produce a reference document at the component's folder root.
+///     Marks a class as an engine component for autodoc generation.
+///     The generator will produce a reference document at the component's folder root.
 /// </summary>
 /// <param name="title">Optional display title. Defaults to the component's folder name.</param>
 /// <param name="summary">Optional short description of the component.</param>

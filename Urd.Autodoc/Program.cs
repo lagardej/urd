@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System.Text;
+using System.Xml.Linq;
 using Urd.Engine.Autodoc;
 
 if (args.Length == 0)
@@ -76,7 +78,7 @@ foreach (var componentType in componentTypes)
 }
 
 // Generate components index
-var indexRows = new System.Text.StringBuilder();
+var indexRows = new StringBuilder();
 foreach (var componentType in componentTypes)
 {
     var attr = componentType.GetCustomAttribute<ComponentAttribute>()!;
@@ -98,7 +100,7 @@ return 0;
 
 static string BuildParameterRows(Assembly assembly, string ns)
 {
-    var sb = new System.Text.StringBuilder();
+    var sb = new StringBuilder();
     var holders = assembly.GetTypes()
         .Where(t => t.Namespace == ns && t.GetCustomAttribute<ParametersAttribute>() is not null);
     foreach (var holder in holders)
@@ -107,12 +109,13 @@ static string BuildParameterRows(Assembly assembly, string ns)
         var a = member.GetCustomAttribute<ParameterAttribute>()!;
         sb.AppendLine($"| {member.Name} | {a.Unit} | {a.Purpose}");
     }
+
     return sb.Length > 0 ? sb.ToString().TrimEnd() : "_None declared._";
 }
 
 static string BuildStateRows(Assembly assembly, string ns)
 {
-    var sb = new System.Text.StringBuilder();
+    var sb = new StringBuilder();
     var holders = assembly.GetTypes()
         .Where(t => t.Namespace == ns && t.GetCustomAttribute<StatesAttribute>() is not null);
     foreach (var holder in holders)
@@ -121,12 +124,13 @@ static string BuildStateRows(Assembly assembly, string ns)
         var a = member.GetCustomAttribute<StateAttribute>()!;
         sb.AppendLine($"| {member.Name} | {a.Unit} | {a.Purpose}");
     }
+
     return sb.Length > 0 ? sb.ToString().TrimEnd() : "_None declared._";
 }
 
 static string BuildForcingRows(Assembly assembly, string ns)
 {
-    var sb = new System.Text.StringBuilder();
+    var sb = new StringBuilder();
     var forcings = assembly.GetTypes()
         .Where(t => t.Namespace == ns && t.GetCustomAttribute<ForcingAttribute>() is not null);
     foreach (var f in forcings)
@@ -134,20 +138,23 @@ static string BuildForcingRows(Assembly assembly, string ns)
         var summary = GetXmlSummary(f) ?? "-";
         sb.AppendLine($"| {f.Name} | {summary}");
     }
+
     return sb.Length > 0 ? sb.ToString().TrimEnd() : "_None declared._";
 }
 
-static IEnumerable<MemberInfo> GetAnnotatedMembers(Type type, Type attributeType) =>
-    type.GetProperties().Cast<MemberInfo>()
+static IEnumerable<MemberInfo> GetAnnotatedMembers(Type type, Type attributeType)
+{
+    return type.GetProperties().Cast<MemberInfo>()
         .Concat(type.GetFields())
         .Where(m => m.GetCustomAttribute(attributeType) is not null);
+}
 
 static string? GetXmlSummary(Type type)
 {
     var xmlPath = Path.ChangeExtension(type.Assembly.Location, ".xml");
     if (!File.Exists(xmlPath)) return null;
 
-    var doc = System.Xml.Linq.XDocument.Load(xmlPath);
+    var doc = XDocument.Load(xmlPath);
     var memberName = $"T:{type.FullName}";
     var summary = doc.Descendants("member")
         .FirstOrDefault(m => m.Attribute("name")?.Value == memberName)
