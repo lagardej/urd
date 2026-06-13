@@ -1,0 +1,147 @@
+= Simulation Architecture: Components & Scheduling
+:toc: left
+
+Rough design sketch. Not a formal component spec. Covers the engine's general scheduling architecture — discrete-event heap, cell-sets, self-slotting, message bus, fast-forward — and how both physical and anthropogenic (civilisation) components fit it. There is no separate generation/spin-up/runtime split. Every component is self-slotted in the scheduler from epoch (clock = 0); some have a one-shot cadence (effectively "compute once at epoch, then dormant until forced"), others tick continuously at their natural cadence.
+
+NOTE: Urd simulates an arbitrary space body, not Earth. No component assumes Earth-specific conditions. Parameters drive all physical outcomes; Earth is one possible configuration, not the reference.
+
+---
+
+== Engine architecture
+
+The mechanisms below apply uniformly to every component, physical or anthropogenic.
+
+=== Scheduler: discrete-event heap
+
+Each scheduled job declares a cadence in simulated-time units and a next-due time. The scheduler is a min-heap keyed by next-due time:
+
+- Pop the job(s) due soonest.
+- Advance simulated time to that point.
+- Run the job's DynaCore tick.
+- If cadenced, reschedule at `now + cadence`. One-shot jobs do not reschedule.
+
+This naturally handles wildly different cadences (e.g. Tectonics at geological cadence vs Atmosphere at sub-rotational cadence) without wasted iterations — slow components simply sit at the bottom of the heap.
+
+=== Cell-sets: a DynaCore's input is a set of cells
+
+A DynaCore's contract is "given this cell-set (plus boundary/neighbour state for cells just outside it), advance it." Global, regional, and single-cell ticks are all the same operation at different cell-set sizes — no special-casing in the component.
+
+This reframes "is River network global or local": when ticking over a region, the cell-set passed to River is that region's drainage basin(s) (derived from existing basin-membership state), not the whole planet. Basins outside scope are simply not included for that tick — not specially excluded, just not part of the job.
+
+At epoch, all components' cell-sets are global (full body) — there is no focus yet.
+
+=== Self-slotting components
+
+Each component owns its own scheduling:
+
+- At init, registers its epoch job(s) with the scheduler per its cadence, cell-set = global. Continuous jobs reschedule themselves at `now + cadence` on completion.
+- Subscribes to `FocusPointChanged` on the message bus. On receipt, derives a cell-set from the new focus (its own domain-specific relevance logic — halo region for field-based components, basin membership for River network, etc.) and registers a **one-shot, higher-priority job** for that cell-set.
+
+No central actor decides cell-sets or cadences on a component's behalf — each component knows its own domain well enough to answer "what's relevant given this focus" and "what's my natural pace."
+
+The cadenced job keeps running on its own schedule regardless of focus, so global/slow state (Tectonics, accumulated erosion, drainage history) is always advancing at its natural pace independent of where the player is looking. The focus-triggered job is additive — it gives the player fresher data for their region sooner, not the only source of truth for that region.
+
+=== Message bus
+
+Pub/sub transport for two kinds of events:
+
+- **`FocusPointChanged(resolution, cell_id, ring_size)`** _(arguments TBD)_ — emitted by the camera/viewport or player agent on movement. Components subscribe and self-slot a one-shot job in response. Absent at epoch (no focus until Civilisation activates or an observer viewport exists).
+- **Forcings** — event-driven (player action, civilisation emissions, volcanic event, etc.), not focus-driven. Components subscribe to the forcing types relevant to them. For sustained forcings, the DynaCore keeps a list of active forcings as part of its own state, rather than the bus tracking duration.
+
+NOTE: Profiling is essentially free via this bus — each job emits a start/end event around its tick (component, cell-set size, timestamps). A profiling listener subscribes to these without any component being aware of it. No dedicated instrumentation needed.
+
+=== Deferred: scheduling optimization
+
+Self-slotting can produce redundant or near-redundant jobs — e.g. a focus-triggered job for a region that the cadenced job is about to cover anyway, or two focus changes in quick succession each scheduling overlapping work. Deduplication, merging, or cancellation of redundant jobs is an **optimization problem, not a structural one**, and is explicitly deferred:
+
+- Build the scheduler without any dedup/merge logic first. Redundant ticks are correctness-preserving (worst case: wasted work, not wrong results).
+- Only design dedup/merge mechanisms once profiling shows redundancy is a measurable cost.
+
+=== Fast-forward: folding N ticks into fewer
+
+When the clock advances by a large Δ, a cadenced job may be due many times over (N pops) before `now`. Whether those N ticks can fold into fewer (Y < N) is a per-component decision:
+
+- **Re-derivable components** (state is a pure function of slow inputs + current time, no memory): on being popped, compute state directly for the current clock time rather than for the stale `next-due`, then reschedule from there. N pops collapse to 1.
+- **History-dependent components** (state depends on the path taken, not just current inputs): cannot fold: must step through intermediate ticks at their own cadence regardless of how large Δ is.
+
+The fold decision and mechanism live in the component/DynaCore, not the scheduler — only the component knows which category it falls into. The scheduler simply advances the clock and hands the current time to whichever job is due; folding (if any) happens inside that job's tick.
+
+---
+
+== Components
+
+Each entry: cadence (one-shot or continuous), cell-set scope at epoch, and forcing behaviour. "One-shot" components self-slot a single job at epoch and do not reschedule unless a forcing makes them dormant-reactive.
+
+=== Stellar
+
+* **Cadence:** one-shot, at epoch.
+* **Produces:** star properties — luminosity, type. Drives all thermal baselines downstream.
+
+=== Planetary
+
+* **Cadence:** continuous, per tick (fastest cadence — primary clock for all irradiance-dependent components).
+* **Produces:** celestial position and rotation state, consumed by all irradiance-dependent components. Rotation direction (prograde/retrograde) is an explicit parameter; affects Coriolis direction and ocean gyre orientation downstream.
+
+=== Tectonics
+
+* **Cadence:** continuous, geological cadence (baseline seed at epoch: plate seeds, initial crust type, fault map, volcanism map; subsequent ticks: stress accumulation, orogeny, elevation refinement).
+* **Forcing-reactive:** elevation adjustments, volcanic events, can be triggered out of cadence by forcings.
+
+=== Elevation
+
+* **Cadence:** one-shot at epoch (crustal thickness + noise → absolute elevation field), refined by Tectonics and Erosion ticks thereafter.
+
+=== Thermal baseline
+
+* **Cadence:** one-shot at epoch. Per-cell irradiance from stellar output × planetary position × latitude × axial tilt. Static map; atmospheric redistribution handled by Atmosphere.
+
+=== Hydrology
+
+* **Cadence:** continuous, per tick. Epoch tick distributes total water volume (parameter) across the elevation field → ocean basin assignment, land/ocean mask. Subsequent ticks propagate precipitation through the river DAG → river flux, lake levels.
+
+=== Glaciation _(tentative)_
+
+* **Cadence:** continuous, orbital/axial cadence. Ice sheet advance and retreat; major driver of erosion and sea level change. Relationship to Atmosphere not yet resolved.
+
+=== Erosion
+
+* **Cadence:** continuous, century cadence. Water and ice reshape elevation; feeds Elevation and River network on next tick.
+
+=== Biome
+
+* **Cadence:** continuous, decade cadence. Temperature + moisture + soil → vegetation and soil quality map.
+* **Forcing-reactive:** rebalances on sustained atmospheric or hydrology shift, or land-use/anthropogenic forcing.
+
+=== Ocean circulation
+
+* **Cadence:** continuous, multi-rotational-period cadence. Thermal gradient → surface current equilibrium. Produces warm/cold coastal masks.
+
+=== River network
+
+* **Cadence:** continuous, rotational-period cadence for flux propagation.
+* **Forcing-reactive:** DAG recomputation triggered by elevation change or drainage threshold crossing.
+
+=== Atmospheric circulation
+
+* **Cadence:** continuous, sub-rotational-period cadence. Coriolis + orography → wind field, rain shadow map, moisture distribution, precipitation field. Owns global atmospheric gas composition (CO2, sulfur particulates).
+* **Forcing-reactive:** gas composition responds to anthropogenic emission forcings.
+
+=== Isostatic rebound
+
+* **Cadence:** forcing-triggered only. Elevation adjustment triggered by glacial load change.
+
+=== Civilisation
+
+* **Cadence:** not present at epoch; comes online at player-chosen start time. Once active, ticks at its own cadence and is the source of `FocusPointChanged` events (or focus is driven by camera/observer if the player does not materialise as an agent).
+* **Consumes at activation:** elevation, river flux, soil quality, temperature, precipitation, biome class (per-cell).
+* **Forcings received:** volcanic, flood, drought, glacial.
+* **Forcings produced:** land-use change, anthropogenic CO2/pollutant emissions — applied to Atmosphere (gas composition) and Biome (soil quality, vegetation).
+
+---
+
+== Sequencing
+
+1. Implement scheduler as a discrete-event heap with cadenced + one-shot jobs, no dedup/merge.
+2. Implement components above on real backends, each self-slotting per the model.
+3. Profile at a realistic resolution/cadence combination.
+4. Address scheduling redundancy only where profiling shows it's needed, informed by measured costs rather than speculation.

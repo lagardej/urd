@@ -5,8 +5,6 @@
 
 Naming authority for the Urd engine and component layer.
 
----
-
 == Domain
 
 [glossary]
@@ -40,8 +38,6 @@ A simulation output.
 An observable value produced by a component as it advances through time.
 State is read-only to consumers; only the owning component may update it.
 
----
-
 == Engine
 
 [glossary]
@@ -51,9 +47,17 @@ How often a <<domain-component,component>>'s <<domain-dynacore,DynaCore>> advanc
 Cadence is intrinsic to the component's physical domain — atmospheric circulation ticks faster than tectonic deformation.
 Components with different cadences naturally stagger: a slower component consumes the latest state from a faster one on its next tick, without explicit coordination.
 
+[[engine-cellular-automaton]]Cellular Automaton::
+A discrete model in which a grid of cells, each in one of a finite set of states, evolves in steps according to a fixed rule applied uniformly: each cell's next state depends only on its current state and the states of its neighbours.
+
 == Topology
 
 [glossary]
+[[topology-cell]]Cell::
+An opaque `CellId` identifier for one node in the grid hierarchy.
+A cell has a resolution, a centre coordinate, a boundary polygon, a parent at any coarser resolution, and children at any finer resolution.
+Validity is checked with `IGrid.IsValid`.
+
 [[topology-grid]]Grid::
 The spherical partition abstraction.
 Provides deterministic, side-effect-free operations over a hierarchy of cells covering the sphere.
@@ -61,19 +65,14 @@ All coordinates are latitude/longitude in degrees; cell identifiers are opaque `
 +
 _Source type:_ `IGrid`.
 
+[[topology-latlng]]LatLng::
+A latitude/longitude coordinate in degrees, used as the common spatial currency of the topology layer.
++
+_Source type:_ `LatLng`.
+
 [[topology-resolution]]Resolution::
 A discrete level in the cell hierarchy. `R0` is the coarsest level; higher values are finer.
 The valid range and subdivision factor are backend-specific.
 Components operate over a resolution range appropriate to their physical scale — macro processes use coarser resolutions; local detail uses finer ones.
 +
 _Source type:_ `Resolution`.
-
-[[topology-cell]]Cell::
-An opaque `CellId` identifier for one node in the grid hierarchy.
-A cell has a resolution, a centre coordinate, a boundary polygon, a parent at any coarser resolution, and children at any finer resolution.
-Validity is checked with `IGrid.IsValid`.
-
-[[topology-latlng]]LatLng::
-A latitude/longitude coordinate in degrees, used as the common spatial currency of the topology layer.
-+
-_Source type:_ `LatLng`.
