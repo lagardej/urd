@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Urd.Engine\Urd.Engine.csproj"/>
-        <ProjectReference Include="..\Urd.Components\Urd.Components.csproj"/>
     </ItemGroup>
 
 </Project>

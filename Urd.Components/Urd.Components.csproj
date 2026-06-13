@@ -5,14 +5,20 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="UnitsNet" Version="5.0.0"/>
+        <PackageReference Include="UnitsNet" Version="5.75.0"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Urd.Engine\Urd.Engine.csproj"/>
+        <ProjectReference Include="..\Urd.Autodoc\Urd.Autodoc.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"/>
     </ItemGroup>
+
+    <Target Name="RunAutodoc" AfterTargets="Build">
+        <Exec Command="dotnet &quot;$(SolutionDir)Urd.Autodoc/bin/$(Configuration)/net10.0/Urd.Autodoc.dll&quot; &quot;$(SolutionDir)&quot;" />
+    </Target>
 
 </Project>
