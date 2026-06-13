@@ -17,7 +17,7 @@ Solution file: `Urd.slnx`
 
 ## Key design decisions
 
-- **Topology**: Spherical hexagonal grid abstracted behind `IHexGrid` / `Resolution` enum. `Urd.Engine` and `Urd.Components` are implementation-agnostic. Current backend: H3, bound via a native extension in `Urd.Godot`.
+- **Topology**: Spherical grid abstracted behind `IGrid` / `Resolution`. `Urd.Engine` and `Urd.Components` are backend-agnostic. The backend is bound in `Urd.Godot`.
 - **Timescale**: civilisation scale is the primary runtime constraint. Longer-cadence processes are frozen at generation unless perturbed by a forcing.
 
 ## Canonical terminology

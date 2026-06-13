@@ -5,7 +5,7 @@
 == Purpose
 
 Defines the spherical partition used by all simulation processes.
-The backend is opaque; all access is through `IHexGrid`.
+The backend is opaque; all access is through `IGrid`.
 
 == Files
 
@@ -13,21 +13,24 @@ The backend is opaque; all access is through `IHexGrid`.
 |===
 |File |Role
 
-|`IHexGrid.cs`
+|`CellId.cs`
+|Opaque cell identifier. Wraps the backend representation.
+
+|`IGrid.cs`
 |Operation contract. Only interface simulation code may depend on.
 
 |`LatLng.cs`
 |Value object. Latitude/longitude in degrees as two `double` primitives.
 
 |`Resolution.cs`
-|Resolution enum. Cell counts per level. Warnings on high-resolution full queries.
+|Resolution value type. R0 is coarsest. Valid range is backend-specific.
 
 |===
 
-== Contract (`IHexGrid`)
+== Contract (`IGrid`)
 
 All operations are deterministic and side effect free.
-Cell identifiers are opaque `ulong` values.
+Cell identifiers are opaque `CellId` values.
 Coordinates are `LatLng` (degrees).
 Invalid input must not crash callers; implementations return safe sentinel values and emit diagnostics.
 
@@ -38,7 +41,10 @@ Invalid input must not crash callers; implementations return safe sentinel value
 2+h|Partition access
 
 |`CellAt(lat, lng, resolution)`
-|Resolve cell from coordinates and resolution.
+|Resolve cell from raw degree values and resolution.
+
+|`CellAt(latLng, resolution)`
+|Overload accepting a `LatLng` value directly.
 
 |`CellsAtResolution(resolution)`
 |All cells at a given resolution. Expensive at high resolutions — see `Resolution.cs`.
@@ -82,26 +88,9 @@ Invalid input must not crash callers; implementations return safe sentinel value
 
 == Resolution model
 
-* R0 is the coarsest level: 122 cells covering the full sphere.
-* Each resolution subdivides every cell into ~7 children: `2 + 10 × 7^n` cells at level `n`.
-* Every resolution has exactly 12 pentagonal cells (topological invariant; Euler's polyhedron formula). All others are hexagonal.
-* Neighbourhood irregularities occur at pentagons — traversal and routing code must handle them explicitly.
-
-=== Cost warning
-
-Full enumeration via `CellsAtResolution` grows rapidly:
-
-[cols="1,1"]
-|===
-|Resolution |Cell count
-
-|R5  |~2M
-|R7  |~99M
-|R9  |~4.8B
-|R10+|tens of billions and above
-|===
-
-Prefer localized queries (`Disk`, `GridRing`, `ChildrenOf`) over full enumeration above R5.
+* R0 is the coarsest level, covering the full sphere.
+* Higher values are finer. The valid range and subdivision factor are backend-specific.
+* Full enumeration via `CellsAtResolution` grows rapidly. Prefer localised queries (`Disk`, `GridRing`, `ChildrenOf`) at fine resolutions.
 
 == References
 

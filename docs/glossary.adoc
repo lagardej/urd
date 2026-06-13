@@ -41,24 +41,23 @@ State is read-only to consumers; only the owning component may update it.
 == Topology
 
 [glossary]
-[[topology-hex-grid]]Hex grid::
+[[topology-grid]]Grid::
 The spherical partition abstraction.
-Provides deterministic, side-effect-free operations over a hierarchy of hexagonal (and 12 pentagonal) cells covering the sphere.
-All coordinates are latitude/longitude in degrees; cell identifiers are opaque `ulong` values.
+Provides deterministic, side-effect-free operations over a hierarchy of cells covering the sphere.
+All coordinates are latitude/longitude in degrees; cell identifiers are opaque `CellId` values.
 +
-_Source type:_ `IHexGrid`.
+_Source type:_ `IGrid`.
 
 [[topology-resolution]]Resolution::
-A discrete level in the cell hierarchy, from `R0` (122 cells) to `R15` (~570 trillion cells).
-Each step subdivides every cell into approximately 7 children.
-The 12 pentagonal cells are a topological invariant present at every resolution.
+A discrete level in the cell hierarchy. `R0` is the coarsest level; higher values are finer.
+The valid range and subdivision factor are backend-specific.
 +
 _Source type:_ `Resolution`.
 
 [[topology-cell]]Cell::
-An opaque `ulong` identifier for one node in the hex-grid hierarchy.
+An opaque `CellId` identifier for one node in the grid hierarchy.
 A cell has a resolution, a centre coordinate, a boundary polygon, a parent at any coarser resolution, and children at any finer resolution.
-Validity is checked with `IHexGrid.IsValid`.
+Validity is checked with `IGrid.IsValid`.
 
 [[topology-latlng]]LatLng::
 A latitude/longitude coordinate in degrees, used as the common spatial currency of the topology layer.

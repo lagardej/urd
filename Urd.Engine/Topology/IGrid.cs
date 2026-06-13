@@ -3,58 +3,61 @@ namespace Urd.Engine.Topology;
 /// <summary>
 ///     Spherical partition operation contract.
 ///     All coordinates are latitude/longitude in degrees.
-///     Cell identifiers are opaque to callers.
+///     Cell identifiers are opaque <see cref="CellId"/> values.
 ///     All operations are deterministic and side-effect free.
 /// </summary>
-public interface IHexGrid
+public interface IGrid
 {
     // Partition access
 
     /// <summary>Returns the complete top-level partition (R0 cells).</summary>
-    long[] RootCells();
+    CellId[] RootCells();
 
     /// <summary>Resolves the cell at the given coordinates and resolution.</summary>
-    ulong CellAt(double latDeg, double lngDeg, Resolution resolution);
+    CellId CellAt(double latDeg, double lngDeg, Resolution resolution);
+
+    /// <inheritdoc cref="CellAt(double, double, Resolution)"/>
+    CellId CellAt(LatLng latLng, Resolution resolution) => CellAt(latLng.Lat, latLng.Lng, resolution);
 
     /// <summary>Enumerates all cells at a given resolution.</summary>
-    IEnumerable<ulong> CellsAtResolution(Resolution resolution);
+    IEnumerable<CellId> CellsAtResolution(Resolution resolution);
 
     // Cell introspection
 
     /// <summary>Returns the resolution of a given cell.</summary>
-    Resolution ResolutionOf(ulong cell);
+    Resolution ResolutionOf(CellId cell);
 
     /// <summary>Returns the centre coordinate of a cell.</summary>
-    LatLng CenterOf(ulong cell);
+    LatLng CenterOf(CellId cell);
 
     /// <summary>Returns the boundary polygon vertices of a cell in traversal order.</summary>
-    LatLng[] BoundaryOf(ulong cell);
+    LatLng[] BoundaryOf(CellId cell);
 
     /// <summary>Returns whether a cell identifier is valid.</summary>
-    bool IsValid(ulong cell);
+    bool IsValid(CellId cell);
 
     // Hierarchy traversal
 
     /// <summary>Returns the ancestor cell at a given coarser resolution.</summary>
-    ulong ParentOf(ulong cell, Resolution parentResolution);
+    CellId ParentOf(CellId cell, Resolution parentResolution);
 
     /// <summary>Returns all child cells at a given finer resolution.</summary>
-    long[] ChildrenOf(ulong cell, Resolution childResolution);
+    CellId[] ChildrenOf(CellId cell, Resolution childResolution);
 
     /// <summary>
     ///     Infers the grid resolution from the first cell in a non-empty dictionary.
     ///     Returns <paramref name="fallback"/> when the dictionary is empty.
     /// </summary>
-    Resolution InferResolution<T>(Dictionary<ulong, T> cells, Resolution fallback);
+    Resolution InferResolution<T>(Dictionary<CellId, T> cells, Resolution fallback);
 
     // Neighbourhood traversal
 
     /// <summary>Returns all cells within ring radius k of a centre cell, including the centre.</summary>
-    long[] Disk(ulong cell, int k);
+    CellId[] Disk(CellId cell, int k);
 
     /// <summary>
     ///     Enumerates cells at exactly grid-ring distance k from a centre cell.
     ///     k = 0 yields only the centre cell itself.
     /// </summary>
-    IEnumerable<ulong> GridRing(ulong center, int k);
+    IEnumerable<CellId> GridRing(CellId center, int k);
 }
