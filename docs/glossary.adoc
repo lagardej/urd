@@ -1,0 +1,129 @@
+= Urd Glossary
+:toc: left
+:toclevels: 2
+:icons: font
+
+Naming authority for the Urd engine and component layer.
+Terms marked *[frozen]* are stable; their source component has been through a tightening pass.
+Terms marked *[pending]* reflect current code but may change during the relevant component's pass.
+
+---
+
+== Data *[frozen]*
+
+[glossary]
+[[term-normalization]]Normalization::
+The pre-validation pass that rewrites values into their canonical form.
+Currently limited to cyclic wrap-around: a property annotated `[WrapAround(min, max, unit)]` is folded into `[min, max)` before validation runs.
+Normalization always precedes <<term-validation,validation>>.
++
+_Source types:_ `Normalizer`, `WrapAroundAttribute`.
+
+[[term-validation]]Validation::
+The constraint-checking pass that rejects values outside declared ranges.
+Validation runs on normalised values and throws `ValidationException` on the first violation.
+Constraints are declared as attributes on `IQuantity` properties (`[RequirePositive]`, `[QuantityRange]`, etc.).
++
+_Source types:_ `Validator`, `QuantityRangeAttribute`, `RequirePositiveAttribute`, `RangeBounds`.
+
+---
+
+== Topology *[frozen]*
+
+[glossary]
+[[term-hex-grid]]Hex grid::
+The spherical partition abstraction.
+Provides deterministic, side-effect-free operations over a hierarchy of hexagonal (and 12 pentagonal) cells covering the sphere.
+All coordinates are latitude/longitude in degrees; cell identifiers are opaque `ulong` values.
++
+_Source type:_ `IHexGrid`.
+
+[[term-resolution]]Resolution::
+A discrete level in the cell hierarchy, from `R0` (122 cells) to `R15` (~570 trillion cells).
+Each step subdivides every cell into approximately 7 children.
+The 12 pentagonal cells are a topological invariant present at every resolution.
++
+_Source type:_ `Resolution`.
+
+[[term-cell]]Cell::
+An opaque `ulong` identifier for one node in the hex-grid hierarchy.
+A cell has a resolution, a centre coordinate, a boundary polygon, a parent at any coarser resolution, and children at any finer resolution.
+Validity is checked with `IHexGrid.IsValid`.
+
+[[term-latlng]]LatLng::
+A latitude/longitude coordinate in degrees, used as the common spatial currency of the topology layer.
++
+_Source type:_ `LatLng`.
+
+---
+
+== Simulation model
+
+[glossary]
+[[term-parameter]]Parameter::
+A simulation input.
+A record carrying the typed, validated values that a simulation needs at initialisation time.
+Parameters are frozen after `Initialize` returns; runtime changes enter through <<term-forcing,forcings>> injected by the <<term-component,component>>.
++
+_Source type convention:_ `*Parameters` records (e.g. `StellarParameters`, `TectonicsParameters`). *[pending — Scheduling / Simulation pass]*
+
+[[term-forcing]]Forcing *[frozen]*::
+An external physical anomaly or stressor introduced into a running simulation.
+The standard Earth-system term for a perturbation applied from outside a component's own dynamics — solar output variations, volcanic aerosols, and designer-injected god-mode events are all forcings.
+The component injects a forcing directly into the simulation.
+
+[[term-component]]Component *[frozen]*::
+The thin facade that runs a <<term-dynacore,dynamical core>> and injects <<term-forcing,forcings>> into it.
+The term follows Earth-system modelling convention, where the full simulation is the product of its component models advancing through time (`Simulation = Model(Parameters) × Time`).
+Components are scheduled and driven by the engine; they are not wiring layers.
++
+_Source type convention:_ types implementing `IComponentRuntime`, backed by a `BaseSimulation` subclass. *[pending — Scheduling / Simulation pass]*
+
+[[term-dynacore]]Dynamical Core (DynaCore) *[frozen]*::
+The computational core of a <<term-component,component>>.
+The dynamical core owns state, implements `DoInitialize` and `DoAdvance`, and receives <<term-forcing,forcings>> from its component.
+Callers interact with the component, not the dynamical core directly.
++
+_Source type convention:_ `BaseDynaCore<TParameters>` subclasses. *[pending — Simulation pass]*
+
+[[term-read-model]]Read model::
+The observable state a <<term-component,component>> exposes to other components.
+Read models are live (updated each `Advance`) and accessed through the <<term-registry,registry>>.
+They are read-only to consumers.
++
+_Source type convention:_ `I*ReadModel` interfaces (e.g. `IStellarReadModel`, `IPlanetaryReadModel`). *[pending — Registry pass]*
+
+---
+
+== Engine infrastructure
+
+[glossary]
+[[term-registry]]Registry::
+The engine-managed lookup that maps read-model interface types to their live instances.
+Components resolve cross-module dependencies through the registry at creation time, not at every tick.
++
+_Source type:_ `IReadModelRegistry` / `ReadModelRegistry`. *[pending — Registry pass]*
+
+[[term-scheduler]]Scheduler::
+The engine component that drives all registered <<term-component,components>> forward in dependency and priority order.
+The scheduler resolves which components are due on each `Advance`, respects the dependency graph, and runs independent components in parallel.
++
+_Source type:_ `ProcessScheduler`. *[pending — Scheduling pass]*
+
+[[term-component-descriptor]]Component descriptor::
+Scheduler metadata for one component kind: cadence, priority, system-level flag, and dependency list.
+Descriptors live in `ComponentCatalog`; they are static and keyed by `ComponentId`.
++
+_Source type:_ `ComponentDescriptor`. *[pending — Scheduling pass]*
+
+[[term-component-slot]]Component slot::
+The compound scheduler key identifying one component running on one body: `(BodyId, ComponentId)`.
+`BodyId` is null for system-level components.
++
+_Source type:_ `ComponentSlot`. *[pending — Scheduling pass]*
+
+[[term-clock]]Simulation clock::
+The monotonic counter tracking absolute elapsed simulation time in seconds since epoch.
+All `Advance` calls receive the clock's current value; time never moves backwards.
++
+_Source type:_ `SimulationClock`. *[pending — Scheduling pass]*
