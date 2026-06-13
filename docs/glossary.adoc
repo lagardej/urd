@@ -17,6 +17,10 @@ Hosts a <<domain-dynacore,dynamical core>> that advances <<domain-state,state>> 
 Exposes that state as read-only.
 Responds to <<domain-forcing,forcings>>.
 
+[[domain-coupling-frequency]]Coupling Frequency::
+Earth-system modelling term for how often a model component exchanges state with its neighbours.
+Used in Urd as the scientific basis for <<engine-cadence,cadence>>.
+
 [[domain-dynacore]]Dynamical Core (DynaCore)::
 The computational core of a <<domain-component,component>>.
 Owns state, advances it over time, and receives <<domain-forcing,forcings>> from its component.
@@ -38,6 +42,15 @@ State is read-only to consumers; only the owning component may update it.
 
 ---
 
+== Engine
+
+[glossary]
+[[engine-cadence]]Cadence::
+Project term for <<domain-coupling-frequency,coupling frequency>>.
+How often a <<domain-component,component>>'s <<domain-dynacore,DynaCore>> advances state.
+Cadence is intrinsic to the component's physical domain — atmospheric circulation ticks faster than tectonic deformation.
+Components with different cadences naturally stagger: a slower component consumes the latest state from a faster one on its next tick, without explicit coordination.
+
 == Topology
 
 [glossary]
@@ -51,6 +64,7 @@ _Source type:_ `IGrid`.
 [[topology-resolution]]Resolution::
 A discrete level in the cell hierarchy. `R0` is the coarsest level; higher values are finer.
 The valid range and subdivision factor are backend-specific.
+Components operate over a resolution range appropriate to their physical scale — macro processes use coarser resolutions; local detail uses finer ones.
 +
 _Source type:_ `Resolution`.
 

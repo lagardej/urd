@@ -1,0 +1,80 @@
+= Planetary Simulation Engine Blueprint
+:toc: macro
+:toclevels: 3
+:sectnums:
+
+This document outlines the architectural blueprint, data pipeline sequences, and reference materials for building a headless, planetary-scale civilization simulation engine utilizing *Uber's H3 Spatial Grid* as the computational backend and *Godot* exclusively as the visual rendering layer.
+
+toc::[]
+
+== 1. Core Architectural Framework
+
+* **Headless Execution Layer:** To ensure high-performance runtime optimization over 10,000 simulated years, all physical, hydrological, and climatological logic runs detached from the rendering pipeline. The Godot layer operates strictly as a visual display client using scale multipliers.
+* **Spatial Grid Backend (Uber H3):** The planetary surface is partitioned into an Icosahedral Snyder Equal Area Hexagonal Global Grid System. H3 native functions provide equidistant neighbor lookups (`h3_grid_disk`) and clear boundary traversals, bypassing the geometric calculus, pole distortions, and coordinate trigonometry associated with traditional 3D spherical meshes.
+* **Cellular Automata (CA) Logic:** Continuous differential equations (e.g., Navier-Stokes for atmospheric flow) are replaced with discrete, arithmetic state machines. Physical dynamics are represented as packets of data transferred sequentially between adjacent H3 indices.
+
+== 2. The Data Dependency Pipeline
+
+To establish a cohesive planetary ecosystem, information flows downward through a strict sequence of dependencies:
+
+[align="center"]
+*Global Constants & Planetary Rotation* -> *Tectonic Base Mesh* -> *Wind Circulation & Ocean Gyres* -> *Orographic Precipitation & River DAGs* -> *Local Biome Matrix* -> *Civilisation Engine Constraints*
+
+== 3. Component Sequence & Execution States
+
+=== Phase A: World Initialization (Linear Configuration)
+Runs once at world creation to establish static geological baselines:
+
+1. **Tectonic Boundary Pass:** Seeds 10–30 random H3 indexes as plate cores, expanding them via breadth-first search (`h3_k_ring`) into discrete plate polygons.
+2. **Crustal Collision Loop (Orogeny):** Executes a fast, iterative loop (50–100 steps) shifting plate IDs along assigned movement vectors. Intersecting nodes scale up local `elevation` parameters (convergent mountain building), while tearing edges set high `volcanism` attributes (divergent rifts).
+3. **Base Elevation & Lithology Bake:** Layers a fractal noise map over the structural tectonic grid to provide minor localized hills and valleys, setting the global sea floor based on an absolute `Ocean_Volume_Constant`.
+4. **Solar Irradiance Baseline:** Queries individual cell latitudes via `h3_to_geo`, passing them through global float multipliers for *Solar Constant/Irradiance* and *Axial Tilt (Obliquity)* to map raw energy absorption values across the sphere.
+
+=== Phase B: The Initialization/Runtime Bridge (Spin-Up Phase)
+Runs for a background block of 100–500 simulated years to allow atmospheric and water systems to reach a stable equilibrium before spawning civilizations:
+
+[cols="1,2,5", options="header"]
+|===
+| Step | Component | Algorithmic Approximation Strategy
+
+| 1
+| **Ocean Gyres**
+| A Cellular Automata heat-transfer loop across ocean H3 cells. Equatorial heat moves along rotational vectors dictated by the planetary `Rotation_Direction` (Clockwise in North / Counter-Clockwise in South for Prograde rotation) to form warm and cold coastal current modifiers.
+
+| 2
+| **Orographic Rain**
+| Traces linear paths (`h3_line`) from water zones along wind vectors determined by latitude bands and rotation rules. Moving across cells with positive elevation deltas strips moisture from the air packet and appends it to the cell's `annual_rainfall` pool, naturally baking rain shadows into the leeward sides of mountain ridges.
+
+| 3
+| **Hydrological Carving**
+| Constructs a Directed Acyclic Graph (DAG) for surface water distribution. Each land index directs its liquid mass to whichever of its 6 immediate neighbors possesses the lowest elevation value. Trapped cells pool water to convert into *Lakes* until a volume limit triggers an updated spillover vector to the ocean.
+
+| 4
+| **Biome Mapping**
+| Processes local rainfall, temperature, and river access through a customized Whittaker State Machine to initialize pristine biomass, drainage capacity, and soil quality profiles.
+|===
+
+=== Phase C: Continuous Runtime Environment
+The engine loops standard environmental changes and civilization actions on a seasonal/annual clock:
+
+* **The Macro Atmospheric Pool:** Volcanic eruptions or heavy civilization industry injects metrics directly into global floats tracking `Particulate_Sulfur` (rapidly decaying global cooling agents) and `Greenhouse_Gas_CO2` (century-scale heat traps), forcing sudden regional temperature anomalies.
+* **Isostatic Rebound / Crustal Shifts (Low-Frequency Ticks):** Every 50–100 years, long-term glacial load shifts base H3 elevation parameters, forcing river networks to recalculate local DAG flow pathing dynamically.
+* **Multi-Resolution Resource Mapping:** Macro climate models process at a coarse resolution (e.g., H3 Resolution 4) to ensure runtime optimization, while civilization grids, soil erosion, and resource gathering pull data at a localized level (e.g., H3 Resolution 7) via instant bit-shifted parent lookups (`h3_to_parent`).
+
+== 4. Reference Projects & Foundational Toolkits
+
+The following collection houses the reference materials, repositories, and scientific toolkits relevant to implementing these procedural planetary components:
+
+=== Procedural Logic and Frameworks
+* **FreezeDriedMangos GitHub Repository:** link:https://github.com/FreezeDriedMangos/realistic-planet-generation-and-simulation[https://github.com/FreezeDriedMangos/realistic-planet-generation-and-simulation]
+** Open-source node implementation of plate tectonics, cellular wind vectors, and cyclical oceanic heat gyres across a discrete spherical grid.
+* **FreezeDriedMangos Interactive Web Demo:** link:https://freezedriedmangos.github.io/realistic-planet-generation-and-simulation/[https://freezedriedmangos.github.io/realistic-planet-generation-and-simulation/]
+** Web-based operational execution of the interconnected crust and climate pipeline.
+* **Red Blob Games (Amit Patel) Polygonal Map Generation:** link:https://www.redblobgames.com/maps/polygon-splines/[https://www.redblobgames.com/maps/polygon-splines/]
+** Structural foundations for Voronoi and polygonal spatial layouts, river pathing graphs, and tectonic down-scaling rules.
+
+=== Scientific and Simulation Toolkits
+* **VPLanet (Virtual Planet Simulator) GitHub:** link:https://github.com/VirtualPlanetaryLaboratory/vplanet[https://github.com/VirtualPlanetaryLaboratory/vplanet]
+** The official repository for the Virtual Planetary Laboratory's modular planet simulation suite, modeling atmospheric escape, internal thermal tectonics, and energy balance profiles via interconnected physics modules.
+* **ASPECT (Advanced Solver for Planetary Evolution, Convection, and Tectonics):** link:https://aspect.geodynamics.org/[https://aspect.geodynamics.org/]
+** Official domain for the high-performance scientific modeling application designed to calculate mantle convection, crustal loading constraints, and deep lithospheric deformation patterns.
