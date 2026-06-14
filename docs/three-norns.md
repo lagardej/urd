@@ -4,14 +4,14 @@ Architectural metaphor for the separation of concerns in Urtharbrunnr (*Urðarbr
 
 The well beneath Yggdrasil is where the three Norns assemble to weave the web of wyrd (*vefr*).
 The loom is the engine. The threads are the fates of agents — the simulation data.
-The web is the product: the emergent tapestry of a civilisation over time.
+The web is the product: the emergent tapestry of a civilization over time.
 
 The project is currently named **Urd**, which is a misnomer — *Urðr* is one of the three Norns, not the assembly of all three.
 The correct umbrella name is **Urtharbrunnr**.
 
 Romanisation convention: ð → th (e.g. *Urðr* → Urth, *Verðandi* → Verthandi).
 
-## Urth — *Urðr* — what has been
+## Urth — *Urðr* — what happened
 
 The well. The source and the record.
 
@@ -20,7 +20,7 @@ The well. The source and the record.
 - Persistence: saved state, history, replays
 - Documentation: the record of what exists (`Autodoc`)
 
-## Verthandi — *Verðandi* — what is becoming
+## Verthandi — *Verðandi* — what is happening
 
 The active weaving. The present tick.
 
@@ -29,7 +29,7 @@ The active weaving. The present tick.
 - Components: agents being woven
 - Inspection, Profiling: watching the weave as it happens
 
-## Skuld — *Skuld* — what shall be
+## Skuld — *Skuld* — what ought to happen
 
 The futures enqueued.
 

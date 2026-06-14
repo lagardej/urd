@@ -1,7 +1,0 @@
-<Solution>
-    <Project Path="Urd.Autodoc\Urd.Autodoc.csproj"/>
-    <Project Path="Urd.Components\Urd.Components.csproj"/>
-    <Project Path="Urd.Engine\Urd.Engine.csproj"/>
-    <Project Path="Urd.Godot\Urd.Godot.csproj"/>
-    <Project Path="Urd.Tests\Urd.Tests.csproj"/>
-</Solution>
