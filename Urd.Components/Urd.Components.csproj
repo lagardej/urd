@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <Target Name="RunAutodoc" AfterTargets="Build">
-        <Exec Command="dotnet &quot;$(SolutionDir)Urd.Autodoc/bin/$(Configuration)/net10.0/Urd.Autodoc.dll&quot; &quot;$(SolutionDir)&quot;" />
+        <Exec Command="dotnet &quot;$(SolutionDir)Urd.Autodoc/bin/$(Configuration)/net10.0/Urd.Autodoc.dll&quot; &quot;$(SolutionDir)&quot;"/>
     </Target>
 
 </Project>

@@ -9,3 +9,4 @@ project.assets.json
 
 # Test output
 TestResults/
+coverage/

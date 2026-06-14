@@ -19,19 +19,19 @@ public abstract class BaseComponent
 
     protected abstract ulong Cadence { get; }
 
-    protected void ScheduleAt(ulong dueAt)
+    protected void ScheduleAt(ulong dueAt, CellSet? cellSet = null)
     {
-        _bus.Publish(new JobScheduled(dueAt, OnTick));
+        _bus.Publish(new JobScheduled(dueAt, OnTick, cellSet ?? CellSet.Global));
     }
 
-    private void OnTick(ulong elapsedSeconds)
+    private void OnTick(TickContext context)
     {
         var sw = Stopwatch.StartNew();
-        Tick(elapsedSeconds);
+        Tick(context);
         sw.Stop();
-        _bus.Publish(new ComponentTicked(GetType().Name, elapsedSeconds, sw.Elapsed));
-        ScheduleAt(elapsedSeconds + Cadence);
+        _bus.Publish(new ComponentTicked(GetType().Name, context.ElapsedSeconds, sw.Elapsed));
+        ScheduleAt(context.ElapsedSeconds + Cadence, context.CellSet);
     }
 
-    protected abstract void Tick(ulong elapsedSeconds);
+    protected abstract void Tick(TickContext context);
 }

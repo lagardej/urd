@@ -4,7 +4,7 @@
 
 == Parameters
 
-[cols="1,1,3", options="header"]
+[cols="1,1,3",options="header"]
 |===
 | Name | Unit | Purpose
 {{parameters}}
@@ -12,7 +12,7 @@
 
 == States
 
-[cols="1,1,3", options="header"]
+[cols="1,1,3",options="header"]
 |===
 | Name | Unit | Purpose
 {{states}}
@@ -20,7 +20,7 @@
 
 == Forcings
 
-[cols="1,3", options="header"]
+[cols="1,3",options="header"]
 |===
 | Type | Summary
 {{forcings}}

@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Urd.Components\Urd.Components.csproj" />
+        <ProjectReference Include="..\Urd.Components\Urd.Components.csproj"/>
     </ItemGroup>
 
 </Project>

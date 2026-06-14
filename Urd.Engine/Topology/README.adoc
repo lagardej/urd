@@ -89,8 +89,10 @@ Invalid input must not crash callers; implementations return safe sentinel value
 == Resolution model
 
 * R0 is the coarsest level, covering the full sphere.
-* Higher values are finer. The valid range and subdivision factor are backend-specific.
-* Full enumeration via `CellsAtResolution` grows rapidly. Prefer localised queries (`Disk`, `GridRing`, `ChildrenOf`) at fine resolutions.
+* Higher values are finer.
+The valid range and subdivision factor are backend-specific.
+* Full enumeration via `CellsAtResolution` grows rapidly.
+Prefer localised queries (`Disk`, `GridRing`, `ChildrenOf`) at fine resolutions.
 
 == References
 

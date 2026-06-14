@@ -1,9 +1,18 @@
+using UnitsNet;
+using UnitsNet.Units;
 using Urd.Engine.Component;
+using Urd.Engine.Data.Normalization;
+using Urd.Engine.Data.Validation;
 using Urd.Engine.Messaging;
 
 namespace Urd.Tests;
 
-public record DummyParameters(string Greeting);
+public record DummyParameters(
+    string Greeting,
+    [property: WrapAround(0, 360, AngleUnit.Degree)]
+    [property: QuantityRange(0, 360, AngleUnit.Degree)]
+    Angle Phase
+);
 
 public sealed class DummyComponent : BaseComponent
 {
@@ -22,7 +31,7 @@ public sealed class DummyComponent : BaseComponent
         CurrentGreeting = evt.Parameters.Greeting;
     }
 
-    protected override void Tick(ulong elapsedSeconds)
+    protected override void Tick(TickContext context)
     {
     }
 }

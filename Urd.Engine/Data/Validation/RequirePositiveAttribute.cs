@@ -12,7 +12,7 @@ public sealed class RequirePositiveAttribute : ValidationAttribute
         if (value is not IQuantity q)
             return new ValidationResult($"{ctx.MemberName} requires IQuantity.");
 
-        var v = Convert.ToDouble(q.Value);
+        var v = q.As(q.Unit);
         if (double.IsNaN(v) || double.IsInfinity(v) || v <= 0)
             return new ValidationResult($"{ctx.MemberName} must be > 0.");
 
