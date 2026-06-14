@@ -1,18 +1,5 @@
 # AGENTS.md — Urd Project
 
-## What is Urd
-
-A civilisation-scale planetary simulation engine. Simulates physical processes (tectonics, climate, hydrology, geology, weather, vegetation, fauna) that constrain civilisation behaviour over a 10k year period. Runs headless; Godot is the rendering layer only.
-
-## Solution structure
-
-| Project | Role |
-|---|---|
-| `Urd.Engine` | Engine framework: topology, data validation, autodoc attributes, scheduling contracts. No simulation logic. |
-| `Urd.Components` | Domain components (tectonics, climate, civilisation, …). References `Urd.Engine`. |
-| `Urd.Autodoc` | Console tool. Generates `README.adoc` per component at build time. References `Urd.Engine` only; loads `Urd.Components.dll` dynamically. |
-| `Urd.Godot` | Godot 4 / C# rendering and third-party adapters. References `Urd.Engine` and `Urd.Components`. |
-
 Solution file: `Urd.slnx`
 
 ## Key design decisions

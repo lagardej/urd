@@ -13,4 +13,8 @@
         <ProjectReference Include="..\Urd.Components\Urd.Components.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="README.adoc"/>
+    </ItemGroup>
+
 </Project>

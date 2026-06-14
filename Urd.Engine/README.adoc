@@ -1,0 +1,20 @@
+= Urd.Engine
+
+Simulation framework.
+Defines the contracts and infrastructure that all domain components depend on — topology, scheduling, messaging, parameter validation, and autodoc attributes.
+
+Contains no simulation logic.
+
+== Layout
+
+|===
+|Directory |Purpose
+
+|`Autodoc/` |Attributes that annotate components for documentation generation
+|`Clock/` |Simulation clock and tick events
+|`Component/` |Base component contract and tick context
+|`Data/` |Parameter validation and normalisation
+|`Messaging/` |Message bus contract
+|`Scheduling/` |Job scheduler
+|`Topology/` |Grid abstraction — `IGrid`, `Resolution`, `CellId`
+|===

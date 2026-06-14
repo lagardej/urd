@@ -1,0 +1,6 @@
+= Urd.Components
+
+Domain models for the Urd simulation engine.
+Each component is a facade for a distinct physical or civilizational domain — tectonics, climate, hydrology, geology, weather, vegetation, fauna, civilization, and others.
+Components expose typed parameters, observable state, and respond to forcings; their computational cores are implemented as DynaCores.
+This project has no dependency on any rendering or platform layer.

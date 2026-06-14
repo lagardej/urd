@@ -1,0 +1,4 @@
+= Urd.Godot
+
+Rendering layer and platform adapter for Urd, built on Godot 4. It binds the spherical grid backend to the `IGrid` abstraction consumed by `Urd.Engine` and `Urd.Components`, and hosts all third-party integrations.
+The simulation itself runs headless; this project is responsible solely for visualization and platform-specific wiring.
