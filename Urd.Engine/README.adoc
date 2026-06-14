@@ -1,11 +1,10 @@
 = Urd.Engine
 
-Simulation framework.
-Defines the contracts and infrastructure that all domain components depend on — topology, scheduling, messaging, parameter validation, and autodoc attributes.
-
+The loom — simulation framework.
+Defines the contracts and infrastructure that all domain components depend on.
 Contains no simulation logic.
 
-== Layout
+== Shafts
 
 |===
 |Directory |Purpose
@@ -13,8 +12,10 @@ Contains no simulation logic.
 |`Autodoc/` |Attributes that annotate components for documentation generation
 |`Clock/` |Simulation clock and tick events
 |`Component/` |Base component contract and tick context
-|`Data/` |Parameter validation and normalisation
+|`Data/` |Parameter validation and normalization
+|`Inspection/` |Runtime inspection tools — clock compression ratio, scheduler dispatch counters, message bus publish counts
 |`Messaging/` |Message bus contract
+|`Profiling/` |Per-component tick duration profiling with a rolling window
 |`Scheduling/` |Job scheduler
 |`Topology/` |Grid abstraction — `IGrid`, `Resolution`, `CellId`
 |===

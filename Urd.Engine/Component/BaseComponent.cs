@@ -21,7 +21,7 @@ public abstract class BaseComponent
 
     protected void ScheduleAt(ulong dueAt, CellSet? cellSet = null)
     {
-        _bus.Publish(new JobScheduled(dueAt, OnTick, cellSet ?? CellSet.Global));
+        _bus.Publish(new JobScheduled(GetType().Name, dueAt, OnTick, cellSet ?? CellSet.Global));
     }
 
     private void OnTick(TickContext context)

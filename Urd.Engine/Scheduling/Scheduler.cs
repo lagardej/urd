@@ -9,14 +9,17 @@ namespace Urd.Engine.Scheduling;
 ///     Discrete-event scheduler. Maintains a min-heap of jobs keyed by next-due simulated time.
 ///     Incoming <see cref="JobScheduled" /> messages are queued concurrently and drained into the heap
 ///     at the start of each <see cref="ClockTicked" />. Due jobs are dispatched in parallel.
+///     Publishes <see cref="JobStarted" /> immediately before each job is dispatched.
 /// </summary>
 public sealed class Scheduler
 {
     private readonly PriorityQueue<JobScheduled, ulong> _heap = new();
     private readonly ConcurrentQueue<JobScheduled> _intake = new();
+    private readonly IMessageBus _bus;
 
     public Scheduler(IMessageBus bus)
     {
+        _bus = bus;
         bus.Subscribe<JobScheduled>(OnJobScheduled);
         bus.Subscribe<ClockTicked>(OnClockTicked);
     }
@@ -52,6 +55,10 @@ public sealed class Scheduler
         while (_heap.TryPeek(out _, out var dueAt) && dueAt <= evt.ElapsedSeconds)
             due.Add(_heap.Dequeue());
 
-        Parallel.ForEach(due, job => job.Tick(new TickContext(evt.ElapsedSeconds, job.CellSet)));
+        Parallel.ForEach(due, job =>
+        {
+            _bus.Publish(new JobStarted(job.ComponentId, evt.ElapsedSeconds));
+            job.Tick(new TickContext(evt.ElapsedSeconds, job.CellSet));
+        });
     }
 }
