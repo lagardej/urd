@@ -4,8 +4,8 @@ using Urd.Engine.Messaging;
 namespace Urd.Engine;
 
 /// <summary>
-/// Engine entry point. Call <see cref="Tick"/> at the desired rate to drive the simulation.
-/// One call per second = real-time; N calls per second = N× time compression.
+///     Engine entry point. Call <see cref="Tick" /> at the desired rate to drive the simulation.
+///     One call per second = real-time; N calls per second = N× time compression.
 /// </summary>
 public sealed class Urd
 {

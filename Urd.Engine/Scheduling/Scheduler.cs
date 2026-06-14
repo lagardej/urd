@@ -5,22 +5,25 @@ using Urd.Engine.Messaging;
 namespace Urd.Engine.Scheduling;
 
 /// <summary>
-/// Discrete-event scheduler. Maintains a min-heap of jobs keyed by next-due simulated time.
-/// Incoming <see cref="JobScheduled"/> messages are queued concurrently and drained into the heap
-/// at the start of each <see cref="ClockTicked"/>. Due jobs are dispatched in parallel.
+///     Discrete-event scheduler. Maintains a min-heap of jobs keyed by next-due simulated time.
+///     Incoming <see cref="JobScheduled" /> messages are queued concurrently and drained into the heap
+///     at the start of each <see cref="ClockTicked" />. Due jobs are dispatched in parallel.
 /// </summary>
-public sealed class Scheduler
+public sealed class Urd
 {
-    private readonly ConcurrentQueue<(Action<ulong> Tick, ulong DueAt)> _intake = new();
     private readonly PriorityQueue<Action<ulong>, ulong> _heap = new();
+    private readonly ConcurrentQueue<(Action<ulong> Tick, ulong DueAt)> _intake = new();
 
-    public Scheduler(IMessageBus bus)
+    public Urd(IMessageBus bus)
     {
         bus.Subscribe<JobScheduled>(OnJobScheduled);
         bus.Subscribe<ClockTicked>(OnClockTicked);
     }
 
-    private void OnJobScheduled(JobScheduled evt) => _intake.Enqueue((evt.Tick, evt.DueAt));
+    private void OnJobScheduled(JobScheduled evt)
+    {
+        _intake.Enqueue((evt.Tick, evt.DueAt));
+    }
 
     private void OnClockTicked(ClockTicked evt)
     {

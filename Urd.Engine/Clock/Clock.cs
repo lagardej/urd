@@ -5,5 +5,8 @@ public sealed class Clock
 {
     public ulong ElapsedSeconds { get; private set; }
 
-    internal void Advance(ulong delta) => ElapsedSeconds += delta;
+    internal void Advance(ulong delta)
+    {
+        ElapsedSeconds += delta;
+    }
 }
