@@ -72,65 +72,76 @@ The fold decision and mechanism live in the component/DynaCore, not the schedule
 
 Each entry: cadence (one-shot or continuous), cell-set scope at epoch, and forcing behaviour. "One-shot" components self-slot a single job at epoch and do not reschedule unless a forcing makes them dormant-reactive.
 
-=== Stellar
+Components are grouped by the sphere they belong to. The climate system is the interaction between five spheres (atmosphere, hydrosphere, cryosphere, lithosphere, biosphere); each interacts with the other four. PlanetarySystem sits outside that web — it is an external driver that the climate system receives from but does not feed back into. Civilisation (anthroposphere) is layered on top of the climate system once active.
 
-* **Cadence:** one-shot, at epoch.
-* **Produces:** star properties — luminosity, type. Drives all thermal baselines downstream.
+=== PlanetarySystem
 
-=== Planetary
+External driver. Provides the physical and orbital context all other components depend on. Not part of the climate system interaction web.
 
 * **Cadence:** continuous, per tick (fastest cadence — primary clock for all irradiance-dependent components).
-* **Produces:** celestial position and rotation state, consumed by all irradiance-dependent components. Rotation direction (prograde/retrograde) is an explicit parameter; affects Coriolis direction and ocean gyre orientation downstream.
+* **Produces:** star properties (luminosity, type), celestial position and rotation state, consumed by all irradiance-dependent components. Rotation direction (prograde/retrograde) is an explicit parameter; affects Coriolis direction and ocean gyre orientation downstream.
 
-=== Tectonics
+=== Lithosphere
+
+==== Tectonics
 
 * **Cadence:** continuous, geological cadence (baseline seed at epoch: plate seeds, initial crust type, fault map, volcanism map; subsequent ticks: stress accumulation, orogeny, elevation refinement).
 * **Forcing-reactive:** elevation adjustments, volcanic events, can be triggered out of cadence by forcings.
 
-=== Elevation
+==== Elevation
 
 * **Cadence:** one-shot at epoch (crustal thickness + noise → absolute elevation field), refined by Tectonics and Erosion ticks thereafter.
 
-=== Thermal baseline
+==== Thermal baseline
 
 * **Cadence:** one-shot at epoch. Per-cell irradiance from stellar output × planetary position × latitude × axial tilt. Static map; atmospheric redistribution handled by Atmosphere.
 
-=== Hydrology
-
-* **Cadence:** continuous, per tick. Epoch tick distributes total water volume (parameter) across the elevation field → ocean basin assignment, land/ocean mask. Subsequent ticks propagate precipitation through the river DAG → river flux, lake levels.
-
-=== Glaciation _(tentative)_
-
-* **Cadence:** continuous, orbital/axial cadence. Ice sheet advance and retreat; major driver of erosion and sea level change. Relationship to Atmosphere not yet resolved.
-
-=== Erosion
+==== Erosion
 
 * **Cadence:** continuous, century cadence. Water and ice reshape elevation; feeds Elevation and River network on next tick.
 
-=== Biome
+=== Atmosphere
 
-* **Cadence:** continuous, decade cadence. Temperature + moisture + soil → vegetation and soil quality map.
-* **Forcing-reactive:** rebalances on sustained atmospheric or hydrology shift, or land-use/anthropogenic forcing.
-
-=== Ocean circulation
-
-* **Cadence:** continuous, multi-rotational-period cadence. Thermal gradient → surface current equilibrium. Produces warm/cold coastal masks.
-
-=== River network
-
-* **Cadence:** continuous, rotational-period cadence for flux propagation.
-* **Forcing-reactive:** DAG recomputation triggered by elevation change or drainage threshold crossing.
-
-=== Atmospheric circulation
+==== Atmospheric circulation
 
 * **Cadence:** continuous, sub-rotational-period cadence. Coriolis + orography → wind field, rain shadow map, moisture distribution, precipitation field. Owns global atmospheric gas composition (CO2, sulfur particulates).
 * **Forcing-reactive:** gas composition responds to anthropogenic emission forcings.
 
-=== Isostatic rebound
+=== Hydrosphere
+
+==== Hydrology
+
+* **Cadence:** continuous, per tick. Epoch tick distributes total water volume (parameter) across the elevation field → ocean basin assignment, land/ocean mask. Subsequent ticks propagate precipitation through the river DAG → river flux, lake levels.
+
+==== Ocean circulation
+
+* **Cadence:** continuous, multi-rotational-period cadence. Thermal gradient → surface current equilibrium. Produces warm/cold coastal masks.
+
+==== River network
+
+* **Cadence:** continuous, rotational-period cadence for flux propagation.
+* **Forcing-reactive:** DAG recomputation triggered by elevation change or drainage threshold crossing.
+
+=== Cryosphere
+
+==== Glaciation _(tentative)_
+
+* **Cadence:** continuous, orbital/axial cadence. Ice sheet advance and retreat; major driver of erosion and sea level change. Relationship to Atmosphere not yet resolved.
+
+==== Isostatic rebound
 
 * **Cadence:** forcing-triggered only. Elevation adjustment triggered by glacial load change.
 
-=== Civilisation
+=== Biosphere
+
+==== Biome
+
+* **Cadence:** continuous, decade cadence. Temperature + moisture + soil → vegetation and soil quality map.
+* **Forcing-reactive:** rebalances on sustained atmospheric or hydrology shift, or land-use/anthropogenic forcing.
+
+=== Anthroposphere
+
+==== Civilisation
 
 * **Cadence:** not present at epoch; comes online at player-chosen start time. Once active, ticks at its own cadence and is the source of `FocusPointChanged` events (or focus is driven by camera/observer if the player does not materialise as an agent).
 * **Consumes at activation:** elevation, river flux, soil quality, temperature, precipitation, biome class (per-cell).
