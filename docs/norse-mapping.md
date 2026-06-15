@@ -1,4 +1,12 @@
-# Norse Mapping
+# Norse Naming Map
+
+| Name             | Role                       | Mythological grounding                                                                    |
+|------------------|----------------------------|-------------------------------------------------------------------------------------------|
+| **Yggdrasil**    | Umbrella project           | The world-tree that survives Ragnarök; the structure that persists across universe deaths |
+| **Urtharbrunnr** | Engine / framework         | The Well of Urð at Yggdrasil's roots; the source that feeds everything above it           |
+| **Norns**        | Domain models / components | The three weavers of fate who draw from the well; active shapers of simulation state      |
+| **Skald**        | Front-end                  | The storyteller; the visible, narrative-facing layer                                      |
+| **Edda**         | Savegame                   | The written record of one world's story; one universe iteration                           |
 
 The mythology of the Norns as the conceptual foundation of **Edda**.
 
